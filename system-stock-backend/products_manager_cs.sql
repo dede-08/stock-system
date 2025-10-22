@@ -38,12 +38,15 @@ CREATE TABLE "Users"(
 
 SELECT * FROM "Users";
 
-ALTER TABLE "Users" ADD COLUMN createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-ALTER TABLE "Users" ADD COLUMN updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Users" ADD COLUMN "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Users" ADD COLUMN "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE "Users" ADD COLUMN "isActive" BOOLEAN;
 ALTER TABLE "Users" ADD COLUMN role VARCHAR(50);
-INSERT INTO "Users" (name, lastname, age, telephone, email, password, createdat, updatedat, "isActive", role) 
+INSERT INTO "Users" (name, lastname, age, telephone, email, password, createdAt, updatedAt, "isActive", role) 
 VALUES ('Carlos', 'Cameron', 20, '982312421', 'camcarlos@adminshop.com', 'admincito44@', NOW(), NOW(), TRUE, 'ROLE_ADMIN');
 
+ALTER TABLE "Products" ADD COLUMN "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Products" ADD COLUMN "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Products" ADD COLUMN "isActive" BOOLEAN;
 
 
