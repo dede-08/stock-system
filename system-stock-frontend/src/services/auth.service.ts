@@ -1,61 +1,40 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { environment } from '../environments/environment';
+import { LoginResponse, RegisterRequest } from '../app/models/auth.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:5173/api/Auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
 
+  constructor(private http: HttpClient) {}
 
-  constructor(private http: HttpClient) { }
-
-  login(email: string, password: string): Observable<boolean> {
-    return this.http.post<any>(`${this.apiUrl}/login`, { email, password })
-      .pipe(
-        map(response => {
-          if (response && response.token) {
-            localStorage.setItem('token', response.token);
-            return true;
-          }
-          return false;
-        }),
-        catchError(error => {
-          return throwError(() => new Error('Invalid credentials'));
-        })
-      );
-  }
-
-  register(name:string, lastname:string, email: string, password: string): Observable<boolean> {
-    return this.http.post<any>(`${this.apiUrl}/add-user`, { name, lastname, email, password })
-    .pipe(
-      map(response => {
-        return true;
-      }),
-      catchError(error => {
-        return throwError(() => new Error('Error registering user'));
+  login(email: string, password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
+      tap((res: LoginResponse) => {
+        sessionStorage.setItem('token', res.token);
       })
     );
   }
 
+  register(user: RegisterRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/add-user`, user);
+  }
+
+  logout() {
+    sessionStorage.removeItem('token');
+  }
+
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return sessionStorage.getItem('token');
   }
 
-  isLoggedIn(): boolean {
-    return this.getToken() !== null;
-  }
-
-  logout(): void {
-    localStorage.removeItem('token');
-  }
-
-  checkAuthStatus(): boolean {
+  isAuthenticated(): boolean {
     const token = this.getToken();
-    // Here you can add additional logic to validate the token if needed
-    return !!token;
+    return !!token; // Devuelve true si el token existe
   }
-
 }
