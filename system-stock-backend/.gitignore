@@ -369,3 +369,6 @@ FodyWeavers.xsd
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+#archivo de la base de datos
+products_manager_cs.sql

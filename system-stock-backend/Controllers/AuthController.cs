@@ -1,5 +1,3 @@
-﻿namespace api_gestion_productos.Controllers;
-
 using System.Security.Claims;
 using System.Text;
 using api_gestion_productos.Data;
@@ -7,8 +5,9 @@ using api_gestion_productos.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using LoginRequest = Models.LoginRequest;
+using LoginRequest = api_gestion_productos.Models.LoginRequest;
 using DotNetEnv;
+using BCrypt.Net;
 
 
 [ApiController]
@@ -34,6 +33,7 @@ public class AuthController : ControllerBase
             return BadRequest("El email ya está registrado.");
         }
 
+        user.password = BCrypt.Net.BCrypt.HashPassword(user.password);
         _context.Users.Add(user);
         _context.SaveChanges();
         return Ok("Usuario registrado correctamente");
@@ -42,8 +42,11 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
-        var user = _context.Users.FirstOrDefault(u => u.email == request.email && u.password == request.password);
-        if (user == null) return Unauthorized("Credenciales incorrectas");
+        var user = _context.Users.FirstOrDefault(u => u.email == request.email);
+        if (user == null || !BCrypt.Net.BCrypt.Verify(request.password, user.password))
+        {
+            return Unauthorized("Credenciales incorrectas");
+        }
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_jwtKey);
@@ -62,4 +65,3 @@ public class AuthController : ControllerBase
         return Ok(new { token = tokenHandler.WriteToken(token) });
     }
 }
-

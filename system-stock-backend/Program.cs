@@ -62,13 +62,14 @@ builder.Services.AddSwaggerGen(c =>
 
 // Registrar servicios
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddAutoMapper(typeof(Program));
 
 // Configurar CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowAngularDev", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:4200")
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -106,7 +107,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Usar CORS
-app.UseCors("AllowAll");
+app.UseCors("AllowAngularDev");
 
 // Usar middleware de logging
 app.UseRequestLogging();

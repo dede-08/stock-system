@@ -1,86 +1,48 @@
 using api_gestion_productos.Data;
 using api_gestion_productos.Models;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace api_gestion_productos.Services;
 
 public class ProductService : IProductService
 {
     private readonly AppDbContext _context;
+    private readonly IMapper _mapper;
 
-    public ProductService(AppDbContext context)
+    public ProductService(AppDbContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
     }
 
     public async Task<IEnumerable<ProductResponseDto>> GetAllProductsAsync()
     {
-        return await _context.Products
+        var products = await _context.Products
             .Where(p => p.isActive)
-            .Select(p => new ProductResponseDto
-            {
-                id = p.id,
-                name = p.name,
-                description = p.description,
-                price = p.price,
-                stock = p.stock,
-                category = p.category,
-                createdAt = p.createdAt,
-                updatedAt = p.updatedAt,
-                isActive = p.isActive
-            })
             .ToListAsync();
+        return _mapper.Map<IEnumerable<ProductResponseDto>>(products);
     }
 
     public async Task<ProductResponseDto?> GetProductByIdAsync(int id)
     {
         var product = await _context.Products
-            .Where(p => p.id == id && p.isActive)
-            .Select(p => new ProductResponseDto
-            {
-                id = p.id,
-                name = p.name,
-                description = p.description,
-                price = p.price,
-                stock = p.stock,
-                category = p.category,
-                createdAt = p.createdAt,
-                updatedAt = p.updatedAt,
-                isActive = p.isActive
-            })
-            .FirstOrDefaultAsync();
-
-        return product;
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.id == id && p.isActive);
+        
+        return _mapper.Map<ProductResponseDto>(product);
     }
 
     public async Task<ProductResponseDto> CreateProductAsync(CreateProductDto productDto)
     {
-        var product = new Product
-        {
-            name = productDto.name,
-            description = productDto.description,
-            price = productDto.price,
-            stock = productDto.stock,
-            category = productDto.category,
-            createdAt = DateTime.UtcNow,
-            isActive = true
-        };
+        var product = _mapper.Map<Product>(productDto);
+        product.createdAt = DateTime.UtcNow;
+        product.isActive = true;
 
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
 
-        return new ProductResponseDto
-        {
-            id = product.id,
-            name = product.name,
-            description = product.description,
-            price = product.price,
-            stock = product.stock,
-            category = product.category,
-            createdAt = product.createdAt,
-            updatedAt = product.updatedAt,
-            isActive = product.isActive
-        };
+        return _mapper.Map<ProductResponseDto>(product);
     }
 
     public async Task<ProductResponseDto?> UpdateProductAsync(int id, UpdateProductDto productDto)
@@ -89,33 +51,12 @@ public class ProductService : IProductService
         if (product == null || !product.isActive)
             return null;
 
-        if (productDto.name != null)
-            product.name = productDto.name;
-        if (productDto.description != null)
-            product.description = productDto.description;
-        if (productDto.price.HasValue)
-            product.price = productDto.price.Value;
-        if (productDto.stock.HasValue)
-            product.stock = productDto.stock.Value;
-        if (productDto.category != null)
-            product.category = productDto.category;
-
+        _mapper.Map(productDto, product);
         product.updatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
-        return new ProductResponseDto
-        {
-            id = product.id,
-            name = product.name,
-            description = product.description,
-            price = product.price,
-            stock = product.stock,
-            category = product.category,
-            createdAt = product.createdAt,
-            updatedAt = product.updatedAt,
-            isActive = product.isActive
-        };
+        return _mapper.Map<ProductResponseDto>(product);
     }
 
     public async Task<bool> DeleteProductAsync(int id)
@@ -133,61 +74,28 @@ public class ProductService : IProductService
 
     public async Task<IEnumerable<ProductResponseDto>> GetProductsByCategoryAsync(string category)
     {
-        return await _context.Products
+        var products = await _context.Products
             .Where(p => p.category.ToLower() == category.ToLower() && p.isActive)
-            .Select(p => new ProductResponseDto
-            {
-                id = p.id,
-                name = p.name,
-                description = p.description,
-                price = p.price,
-                stock = p.stock,
-                category = p.category,
-                createdAt = p.createdAt,
-                updatedAt = p.updatedAt,
-                isActive = p.isActive
-            })
             .ToListAsync();
+        return _mapper.Map<IEnumerable<ProductResponseDto>>(products);
     }
 
     public async Task<IEnumerable<ProductResponseDto>> SearchProductsAsync(string searchTerm)
     {
-        return await _context.Products
+        var products = await _context.Products
             .Where(p => p.isActive && 
                        (p.name.ToLower().Contains(searchTerm.ToLower()) ||
                         p.description.ToLower().Contains(searchTerm.ToLower()) ||
                         p.category.ToLower().Contains(searchTerm.ToLower())))
-            .Select(p => new ProductResponseDto
-            {
-                id = p.id,
-                name = p.name,
-                description = p.description,
-                price = p.price,
-                stock = p.stock,
-                category = p.category,
-                createdAt = p.createdAt,
-                updatedAt = p.updatedAt,
-                isActive = p.isActive
-            })
             .ToListAsync();
+        return _mapper.Map<IEnumerable<ProductResponseDto>>(products);
     }
 
     public async Task<IEnumerable<ProductResponseDto>> GetLowStockProductsAsync(int threshold = 10)
     {
-        return await _context.Products
+        var products = await _context.Products
             .Where(p => p.stock <= threshold && p.isActive)
-            .Select(p => new ProductResponseDto
-            {
-                id = p.id,
-                name = p.name,
-                description = p.description,
-                price = p.price,
-                stock = p.stock,
-                category = p.category,
-                createdAt = p.createdAt,
-                updatedAt = p.updatedAt,
-                isActive = p.isActive
-            })
             .ToListAsync();
+        return _mapper.Map<IEnumerable<ProductResponseDto>>(products);
     }
 }
