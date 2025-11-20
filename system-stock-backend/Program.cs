@@ -68,11 +68,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Registrar servicios
+//registrar servicios
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddAutoMapper(typeof(Program));
 
-// Configurar CORS
+//configurar CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularDev", policy =>
@@ -84,7 +84,8 @@ builder.Services.AddCors(options =>
 });
 
 Env.Load();
-// JWT config
+
+//JWT config
 var key = Env.GetString("API_KEY");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
@@ -108,16 +109,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "API Gestión de Productos v1");
-        c.RoutePrefix = string.Empty; // Hacer que Swagger esté disponible en la raíz
+        c.RoutePrefix = string.Empty;
     });
 }
 
 app.UseHttpsRedirection();
 
-// Usar CORS
+//usar CORS
 app.UseCors("AllowAngularDev");
 
-// Usar middleware de logging
+//usar middleware de logging
 app.UseRequestLogging();
 
 app.UseAuthentication();

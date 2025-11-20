@@ -38,7 +38,7 @@ namespace api_gestion_productos.Controllers
             });
         }
 
-        ///obtiene productos por categoría con conteo
+        ///obtiene productos por categoria con conteo
         [HttpGet("products/by-category")]
         public async Task<ActionResult<IEnumerable<object>>> GetProductsByCategory()
         {
