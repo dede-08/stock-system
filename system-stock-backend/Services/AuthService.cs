@@ -64,6 +64,11 @@ public class AuthService : IAuthService
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.password, user.password))
             return null;
 
+        // La tabla no crece sin cota: borra los refresh ya expirados del usuario.
+        await _context.RefreshTokens
+            .Where(r => r.userId == user.id && r.expiresAt < DateTime.UtcNow)
+            .ExecuteDeleteAsync(ct);
+
         return await IssuePairAsync(user, ct);
     }
 
@@ -81,6 +86,9 @@ public class AuthService : IAuthService
 
         // Rotación: revoca el usado y emite un par nuevo.
         stored.revokedAt = DateTime.UtcNow;
+        await _context.RefreshTokens
+            .Where(r => r.userId == stored.userId && r.expiresAt < DateTime.UtcNow)
+            .ExecuteDeleteAsync(ct);
         var pair = await IssuePairAsync(stored.user, ct, replacedBy: stored);
         stored.replacedByTokenHash = _tokens.HashRefreshToken(pair.refreshToken);
         await _context.SaveChangesAsync(ct);

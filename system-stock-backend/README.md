@@ -63,6 +63,12 @@ dotnet test api-gestion-productos.sln
 
 CI en `.github/workflows/backend-ci.yml` (build + test).
 
+## Observabilidad
+
+Serilog como único provider (sección `Serilog` en appsettings). Cada request lleva
+`X-Request-Id` (se reutiliza el entrante o se genera) y queda en el scope de todos
+los logs vía `LogContext`.
+
 
 ## Arquitectura
 

@@ -1,5 +1,7 @@
 namespace api_gestion_productos.Middleware;
 
+using Serilog.Context;
+
 /// <summary>
 /// X-Request-Id entrante se reutiliza; si no viene, se genera.
 /// Queda en el response y en el logger scope para correlacionar.
@@ -30,6 +32,7 @@ public class CorrelationIdMiddleware
         });
 
         using (_logger.BeginScope("{RequestId}", id))
+        using (LogContext.PushProperty("RequestId", id))
         {
             await _next(context);
         }

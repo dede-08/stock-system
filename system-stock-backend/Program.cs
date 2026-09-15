@@ -9,12 +9,17 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 // .env solo para desarrollo local. En prod usar variables de entorno / KeyVault.
 // Debe cargarse ANTES de crear el builder para que IConfiguration las vea.
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog como único provider (sin doble consola). Lee sección "Serilog".
+builder.Logging.ClearProviders();
+builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
 
 // Add services to the container.
 builder.Services.AddControllers();
