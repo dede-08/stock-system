@@ -136,10 +136,37 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
         ClockSkew = TimeSpan.FromMinutes(2),
+        RoleClaimType = System.Security.Claims.ClaimTypes.Role,
     };
 });
 
 var app = builder.Build();
+
+// Bootstrap: el email en Admin:Email (env ADMIN_EMAIL) queda como ADMIN.
+// Best-effort: si la DB no existe aún (pre-migración), solo se loguea.
+using (var scope = app.Services.CreateScope())
+{
+    var log = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("AdminBootstrap");
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var adminEmail = app.Configuration["Admin:Email"]?.Trim().ToLowerInvariant();
+        if (!string.IsNullOrWhiteSpace(adminEmail))
+        {
+            var admin = await db.Users.FirstOrDefaultAsync(u => u.email.ToLower() == adminEmail);
+            if (admin is not null && admin.role != "ADMIN")
+            {
+                admin.role = "ADMIN";
+                await db.SaveChangesAsync();
+                log.LogInformation("Usuario {email} promovido a ADMIN por bootstrap.", adminEmail);
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        log.LogWarning(ex, "Admin bootstrap omitido (DB no disponible?).");
+    }
+}
 
 // Middleware de errores PRIMERO para atrapar todo.
 app.UseExceptionHandling();

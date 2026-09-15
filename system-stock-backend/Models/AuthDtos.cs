@@ -33,7 +33,29 @@ public class RegisterDto
 
 public class AuthResponseDto
 {
+    // Access token (compat con frontend actual que lee `token`).
     public string token { get; set; } = "";
+    public string refreshToken { get; set; } = "";
     public string email { get; set; } = "";
     public string fullName { get; set; } = "";
+}
+
+public class RefreshRequestDto
+{
+    public string refreshToken { get; set; } = "";
+}
+
+public class PromoteUserDto
+{
+    public string email { get; set; } = "";
+    public string role { get; set; } = "";
+}
+
+public class UserDto
+{
+    public int id { get; set; }
+    public string email { get; set; } = "";
+    public string fullName { get; set; } = "";
+    public string role { get; set; } = "";
+    public bool isActive { get; set; }
 }

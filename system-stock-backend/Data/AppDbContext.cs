@@ -8,6 +8,7 @@ namespace api_gestion_productos.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         public DbSet<User> Users { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +39,19 @@ namespace api_gestion_productos.Data
                 e.HasIndex(u => u.email).IsUnique();
                 e.HasIndex(u => u.isActive);
             });
+
+            modelBuilder.Entity<RefreshToken>(e =>
+            {
+                e.Property(r => r.tokenHash).HasMaxLength(64).IsRequired();
+                e.Property(r => r.replacedByTokenHash).HasMaxLength(64);
+                e.HasIndex(r => r.tokenHash).IsUnique();
+                e.HasIndex(r => r.userId);
+                e.HasIndex(r => r.expiresAt);
+                e.HasOne(r => r.user)
+                    .WithMany()
+                    .HasForeignKey(r => r.userId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken ct = default)
@@ -67,6 +81,11 @@ namespace api_gestion_productos.Data
                     {
                         u.updatedat = DateTime.UtcNow;
                     }
+                }
+                else if (entry.Entity is RefreshToken r)
+                {
+                    if (entry.State == EntityState.Added)
+                        r.createdAt = DateTime.UtcNow;
                 }
             }
             return base.SaveChangesAsync(ct);

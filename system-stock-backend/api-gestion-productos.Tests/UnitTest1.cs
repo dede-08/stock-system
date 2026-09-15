@@ -76,4 +76,40 @@ public class TokenServiceTests
         Assert.Contains(token.Claims, c => (c.Type == ClaimTypes.Role || c.Type == "role") && c.Value == "USER");
         Assert.True(token.ValidTo > DateTime.UtcNow.AddMinutes(50));
     }
+
+    [Fact]
+    public void RefreshToken_IsUniqueAndOpaque()
+    {
+        var svc = BuildService(new() { ["Jwt:Key"] = new string('k', 64) });
+        var a = svc.GenerateRefreshToken();
+        var b = svc.GenerateRefreshToken();
+        Assert.NotEqual(a, b);
+        Assert.DoesNotContain("==", a + b);
+    }
+
+    [Fact]
+    public void HashRefreshToken_IsDeterministicAndHidesPlaintext()
+    {
+        var svc = BuildService(new() { ["Jwt:Key"] = new string('k', 64) });
+        var h1 = svc.HashRefreshToken("abc");
+        var h2 = svc.HashRefreshToken("abc");
+        var h3 = svc.HashRefreshToken("abd");
+        Assert.Equal(h1, h2);
+        Assert.NotEqual(h1, h3);
+        Assert.Equal(64, h1.Length);
+        Assert.DoesNotContain("abc", h1);
+    }
+
+    [Theory]
+    [InlineData(null, 7)]
+    [InlineData(0, 7)]
+    [InlineData(-5, 7)]
+    [InlineData(14, 14)]
+    [InlineData(99, 30)]
+    public void RefreshExpiryDays_Clamps(int? configured, int expected)
+    {
+        var values = new Dictionary<string, string?> { ["Jwt:Key"] = new string('k', 64) };
+        if (configured is not null) values["Jwt:RefreshExpiryDays"] = configured.ToString();
+        Assert.Equal(expected, BuildService(values).GetRefreshExpiryDays());
+    }
 }

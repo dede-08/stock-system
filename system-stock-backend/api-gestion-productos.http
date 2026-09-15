@@ -36,3 +36,24 @@ Accept: application/json
 GET {{HostAddress}}/api/stats/products
 Authorization: Bearer {{token}}
 Accept: application/json
+
+### Refresh (rotación)
+POST {{HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "PEGAR_REFRESH_AQUI"
+}
+
+### Logout (revoca refresh)
+POST {{HostAddress}}/api/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "PEGAR_REFRESH_AQUI"
+}
+
+### Usuarios (solo ADMIN)
+GET {{HostAddress}}/api/auth/users
+Authorization: Bearer {{token}}
+Accept: application/json

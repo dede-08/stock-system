@@ -47,7 +47,11 @@ docker compose up --build
 
 - `GET /health` — health check (sin auth)
 - `POST /api/auth/add-user` — registro (rate-limit 10/min)
-- `POST /api/auth/login` — login, devuelve `{token,email,fullName}`
+- `POST /api/auth/login` — login, devuelve `{token,refreshToken,email,fullName}`
+- `POST /api/auth/refresh` — rota el par con `{refreshToken}`
+- `POST /api/auth/logout` — revoca el refresh
+- `GET /api/auth/users` — solo ADMIN
+- `POST /api/auth/promote` — solo ADMIN, body `{email,role}`
 - `GET /api/products?page=1&pageSize=20&sortBy=price&desc=true` — paginado
 - `GET /api/stats/products` — stats (cache 60s)
 
