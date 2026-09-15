@@ -1,0 +1,23 @@
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Build
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+out/
+publish/
+
+# Env / secretos — NUNCA commitear valores reales
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# DB dumps locales
+*.sql.local

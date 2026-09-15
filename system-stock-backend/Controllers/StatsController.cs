@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using api_gestion_productos.Models;
 using api_gestion_productos.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace api_gestion_productos.Controllers
 {
@@ -19,6 +20,7 @@ namespace api_gestion_productos.Controllers
 
         ///obtiene las estadisticas generales de los productos
         [HttpGet("products")]
+        [OutputCache(Duration = 60)]
         public async Task<ActionResult<ProductStatsDto>> GetProductStats(
             [FromQuery] int lowStockThreshold = 10, CancellationToken ct = default)
         {
@@ -29,6 +31,7 @@ namespace api_gestion_productos.Controllers
 
         ///obtiene productos por categoria con conteo
         [HttpGet("products/by-category")]
+        [OutputCache(Duration = 60)]
         public async Task<ActionResult<IReadOnlyList<CategoryStatsDto>>> GetProductsByCategory(CancellationToken ct)
         {
             return Ok(await _stats.GetProductsByCategoryAsync(ct));

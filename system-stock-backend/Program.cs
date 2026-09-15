@@ -19,6 +19,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
+builder.Services.AddOutputCache();
+builder.Services.AddHealthChecks().AddCheck<DbHealthCheck>("postgres");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -156,10 +158,13 @@ app.UseCors("Frontend");
 
 app.UseRateLimiter();
 
+app.UseOutputCache();
+
 // usar middleware de logging
 app.UseRequestLogging();
 
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 app.Run();

@@ -5,7 +5,15 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>api_gestion_productos</RootNamespace>
+    <DefaultItemExcludes>$(DefaultItemExcludes);api-gestion-productos.Tests/**/*</DefaultItemExcludes>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="api-gestion-productos.Tests/**/*" />
+    <Compile Remove="api-gestion-productos.Tests/**/*.cs" />
+    <EmbeddedResource Remove="api-gestion-productos.Tests/**/*" />
+    <None Remove="api-gestion-productos.Tests/**/*" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="Models\User.cs" />

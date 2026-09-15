@@ -1,0 +1,29 @@
+name: backend-ci
+
+on:
+  push:
+    paths:
+      - 'system-stock-backend/**'
+  pull_request:
+    paths:
+      - 'system-stock-backend/**'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: system-stock-backend
+    env:
+      ConnectionStrings__DefaultConnection: Host=localhost;Database=dummy;Username=postgres;Password=dummy
+      Jwt__Key: ci-clave-de-prueba-minimo-32-chars-0123456789
+      Jwt__Issuer: ci-issuer
+      Jwt__Audience: ci-audience
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore api-gestion-productos.sln
+      - run: dotnet build api-gestion-productos.sln --no-restore -c Release
+      - run: dotnet test api-gestion-productos.sln --no-build -c Release
