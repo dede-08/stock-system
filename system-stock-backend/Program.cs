@@ -76,6 +76,7 @@ builder.Services.AddSwaggerGen(c =>
 
 // registrar servicios
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IStatsService, StatsService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddAutoMapper(typeof(Program));

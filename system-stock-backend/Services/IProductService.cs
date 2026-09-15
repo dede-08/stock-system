@@ -4,13 +4,12 @@ namespace api_gestion_productos.Services;
 
 public interface IProductService
 {
-    Task<IEnumerable<ProductResponseDto>> GetAllProductsAsync();
-    Task<ProductResponseDto?> GetProductByIdAsync(int id);
-    Task<ProductResponseDto> CreateProductAsync(CreateProductDto productDto);
-    Task<ProductResponseDto?> UpdateProductAsync(int id, UpdateProductDto productDto);
-    Task<bool> DeleteProductAsync(int id);
-    Task<IEnumerable<ProductResponseDto>> GetProductsByCategoryAsync(string category);
-    Task<IEnumerable<ProductResponseDto>> SearchProductsAsync(string searchTerm);
-    Task<IEnumerable<ProductResponseDto>> GetLowStockProductsAsync(int threshold = 10);
-
+    Task<PagedResult<ProductResponseDto>> GetAllProductsAsync(int page, int pageSize, string? sortBy = null, bool desc = false, CancellationToken ct = default);
+    Task<ProductResponseDto?> GetProductByIdAsync(int id, CancellationToken ct = default);
+    Task<ProductResponseDto> CreateProductAsync(CreateProductDto productDto, CancellationToken ct = default);
+    Task<ProductResponseDto?> UpdateProductAsync(int id, UpdateProductDto productDto, CancellationToken ct = default);
+    Task<bool> DeleteProductAsync(int id, CancellationToken ct = default);
+    Task<PagedResult<ProductResponseDto>> GetProductsByCategoryAsync(string category, int page, int pageSize, CancellationToken ct = default);
+    Task<PagedResult<ProductResponseDto>> SearchProductsAsync(string searchTerm, int page, int pageSize, CancellationToken ct = default);
+    Task<PagedResult<ProductResponseDto>> GetLowStockProductsAsync(int threshold, int page, int pageSize, CancellationToken ct = default);
 }

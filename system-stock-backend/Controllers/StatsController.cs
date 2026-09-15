@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using api_gestion_productos.Data;
 using api_gestion_productos.Models;
+using api_gestion_productos.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 
 namespace api_gestion_productos.Controllers
 {
@@ -11,129 +10,55 @@ namespace api_gestion_productos.Controllers
     [Route("api/[controller]")]
     public class StatsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IStatsService _stats;
 
-        public StatsController(AppDbContext context)
+        public StatsController(IStatsService stats)
         {
-            _context = context;
+            _stats = stats;
         }
 
         ///obtiene las estadisticas generales de los productos
         [HttpGet("products")]
-        public async Task<ActionResult<object>> GetProductStats(CancellationToken ct)
+        public async Task<ActionResult<ProductStatsDto>> GetProductStats(
+            [FromQuery] int lowStockThreshold = 10, CancellationToken ct = default)
         {
-            var baseQuery = _context.Products.Where(p => p.isActive);
-            var totalProducts = await baseQuery.CountAsync(ct);
-            if (totalProducts == 0)
-                return Ok(new { totalProducts = 0, lowStockProducts = 0, outOfStockProducts = 0, totalValue = 0.0, averagePrice = 0.0 });
-
-            var lowStockProducts = await baseQuery.Where(p => p.stock <= 10).CountAsync(ct);
-            var outOfStockProducts = await baseQuery.Where(p => p.stock == 0).CountAsync(ct);
-            var totalValue = await baseQuery.SumAsync(p => p.price * p.stock, ct);
-            var avgPrice = await baseQuery.AverageAsync(p => p.price, ct);
-
-            return Ok(new
-            {
-                totalProducts,
-                lowStockProducts,
-                outOfStockProducts,
-                totalValue = Math.Round(totalValue, 2),
-                averagePrice = Math.Round(avgPrice, 2)
-            });
+            if (lowStockThreshold < 0 || lowStockThreshold > 100000)
+                return BadRequest(new { message = "lowStockThreshold debe estar entre 0 y 100000" });
+            return Ok(await _stats.GetProductStatsAsync(lowStockThreshold, ct));
         }
 
         ///obtiene productos por categoria con conteo
         [HttpGet("products/by-category")]
-        public async Task<ActionResult<IEnumerable<object>>> GetProductsByCategory()
+        public async Task<ActionResult<IReadOnlyList<CategoryStatsDto>>> GetProductsByCategory(CancellationToken ct)
         {
-            var categoryStats = await _context.Products
-                .Where(p => p.isActive)
-                .GroupBy(p => p.category)
-                .Select(g => new
-                {
-                    category = g.Key,
-                    count = g.Count(),
-                    totalValue = Math.Round(g.Sum(p => p.price * p.stock), 2),
-                    averagePrice = Math.Round(g.Average(p => p.price), 2)
-                })
-                .ToListAsync();
-
-            return Ok(categoryStats);
+            return Ok(await _stats.GetProductsByCategoryAsync(ct));
         }
 
         ///obtiene los productos con mayor precio
         [HttpGet("products/most-expensive")]
-        public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetMostExpensiveProducts([FromQuery] int limit = 5)
+        public async Task<ActionResult<IReadOnlyList<ProductResponseDto>>> GetMostExpensiveProducts(
+            [FromQuery] int limit = 5, CancellationToken ct = default)
         {
-            var products = await _context.Products
-                .Where(p => p.isActive)
-                .OrderByDescending(p => p.price)
-                .Take(limit)
-                .Select(p => new ProductResponseDto
-                {
-                    id = p.id,
-                    name = p.name,
-                    description = p.description,
-                    price = p.price,
-                    stock = p.stock,
-                    category = p.category,
-                    createdAt = p.createdAt,
-                    updatedAt = p.updatedAt,
-                    isActive = p.isActive
-                })
-                .ToListAsync();
-
-            return Ok(products);
+            if (limit < 1 || limit > 100) return BadRequest(new { message = "limit debe estar entre 1 y 100" });
+            return Ok(await _stats.GetMostExpensiveProductsAsync(limit, ct));
         }
 
         ///obtiene los productos con mayor stock
         [HttpGet("products/highest-stock")]
-        public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetHighestStockProducts([FromQuery] int limit = 5)
+        public async Task<ActionResult<IReadOnlyList<ProductResponseDto>>> GetHighestStockProducts(
+            [FromQuery] int limit = 5, CancellationToken ct = default)
         {
-            var products = await _context.Products
-                .Where(p => p.isActive)
-                .OrderByDescending(p => p.stock)
-                .Take(limit)
-                .Select(p => new ProductResponseDto
-                {
-                    id = p.id,
-                    name = p.name,
-                    description = p.description,
-                    price = p.price,
-                    stock = p.stock,
-                    category = p.category,
-                    createdAt = p.createdAt,
-                    updatedAt = p.updatedAt,
-                    isActive = p.isActive
-                })
-                .ToListAsync();
-
-            return Ok(products);
+            if (limit < 1 || limit > 100) return BadRequest(new { message = "limit debe estar entre 1 y 100" });
+            return Ok(await _stats.GetHighestStockProductsAsync(limit, ct));
         }
 
         ///obtiene los productos recientemente agregados
         [HttpGet("products/recent")]
-        public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetRecentProducts([FromQuery] int limit = 10)
+        public async Task<ActionResult<IReadOnlyList<ProductResponseDto>>> GetRecentProducts(
+            [FromQuery] int limit = 10, CancellationToken ct = default)
         {
-            var products = await _context.Products
-                .Where(p => p.isActive)
-                .OrderByDescending(p => p.createdAt)
-                .Take(limit)
-                .Select(p => new ProductResponseDto
-                {
-                    id = p.id,
-                    name = p.name,
-                    description = p.description,
-                    price = p.price,
-                    stock = p.stock,
-                    category = p.category,
-                    createdAt = p.createdAt,
-                    updatedAt = p.updatedAt,
-                    isActive = p.isActive
-                })
-                .ToListAsync();
-
-            return Ok(products);
+            if (limit < 1 || limit > 100) return BadRequest(new { message = "limit debe estar entre 1 y 100" });
+            return Ok(await _stats.GetRecentProductsAsync(limit, ct));
         }
     }
 }
