@@ -17,6 +17,17 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
       tap((res: LoginResponse) => {
         sessionStorage.setItem('token', res.token);
+        if (res.refreshToken) sessionStorage.setItem('refresh_token', res.refreshToken);
+      })
+    );
+  }
+
+  refresh(): Observable<LoginResponse> {
+    const refreshToken = sessionStorage.getItem('refresh_token');
+    return this.http.post<LoginResponse>(`${this.apiUrl}/refresh`, { refreshToken }).pipe(
+      tap((res: LoginResponse) => {
+        sessionStorage.setItem('token', res.token);
+        if (res.refreshToken) sessionStorage.setItem('refresh_token', res.refreshToken);
       })
     );
   }
@@ -26,15 +37,34 @@ export class AuthService {
   }
 
   logout() {
+    const refreshToken = sessionStorage.getItem('refresh_token');
+    if (refreshToken) {
+      this.http.post(`${this.apiUrl}/logout`, { refreshToken }).subscribe({ error: () => undefined });
+    }
     sessionStorage.removeItem('token');
+    sessionStorage.removeItem('refresh_token');
   }
 
   getToken(): string | null {
     return sessionStorage.getItem('token');
   }
 
+  getRefreshToken(): string | null {
+    return sessionStorage.getItem('refresh_token');
+  }
+
   isAuthenticated(): boolean {
     const token = this.getToken();
-    return !!token; // Devuelve true si el token existe
+    if (!token) return false;
+    // Si el JWT trae exp, respétala; si no se puede leer, conserva compat (true).
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    try {
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (typeof payload.exp !== 'number') return true;
+      return Date.now() < payload.exp * 1000 - 5000; // 5s de margen
+    } catch {
+      return true;
+    }
   }
 }
