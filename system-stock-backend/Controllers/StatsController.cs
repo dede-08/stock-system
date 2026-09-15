@@ -20,13 +20,17 @@ namespace api_gestion_productos.Controllers
 
         ///obtiene las estadisticas generales de los productos
         [HttpGet("products")]
-        public async Task<ActionResult<object>> GetProductStats()
+        public async Task<ActionResult<object>> GetProductStats(CancellationToken ct)
         {
-            var totalProducts = await _context.Products.Where(p => p.isActive).CountAsync();
-            var lowStockProducts = await _context.Products.Where(p => p.stock <= 10 && p.isActive).CountAsync();
-            var outOfStockProducts = await _context.Products.Where(p => p.stock == 0 && p.isActive).CountAsync();
-            var totalValue = await _context.Products.Where(p => p.isActive).SumAsync(p => p.price * p.stock);
-            var avgPrice = await _context.Products.Where(p => p.isActive).AverageAsync(p => p.price);
+            var baseQuery = _context.Products.Where(p => p.isActive);
+            var totalProducts = await baseQuery.CountAsync(ct);
+            if (totalProducts == 0)
+                return Ok(new { totalProducts = 0, lowStockProducts = 0, outOfStockProducts = 0, totalValue = 0.0, averagePrice = 0.0 });
+
+            var lowStockProducts = await baseQuery.Where(p => p.stock <= 10).CountAsync(ct);
+            var outOfStockProducts = await baseQuery.Where(p => p.stock == 0).CountAsync(ct);
+            var totalValue = await baseQuery.SumAsync(p => p.price * p.stock, ct);
+            var avgPrice = await baseQuery.AverageAsync(p => p.price, ct);
 
             return Ok(new
             {

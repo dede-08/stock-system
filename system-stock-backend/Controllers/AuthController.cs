@@ -1,67 +1,49 @@
-using System.Security.Claims;
-using System.Text;
-using api_gestion_productos.Data;
 using api_gestion_productos.Models;
+using api_gestion_productos.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using LoginRequest = api_gestion_productos.Models.LoginRequest;
-using DotNetEnv;
-using BCrypt.Net;
+using Microsoft.AspNetCore.RateLimiting;
 
+namespace api_gestion_productos.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
+    private readonly IAuthService _auth;
 
-    
-    private readonly AppDbContext _context;
-    private readonly string _jwtKey = Env.GetString("API_KEY");
-
-    public AuthController(AppDbContext context)
+    public AuthController(IAuthService auth)
     {
-        _context = context;
-        Env.Load();
+        _auth = auth;
     }
 
     [HttpPost("add-user")]
-    public IActionResult Register(User user)
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
+    public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto dto, CancellationToken ct)
     {
-        if (_context.Users.Any(u => u.email == user.email))
-        {
-            return BadRequest("El email ya está registrado.");
-        }
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
 
-        user.password = BCrypt.Net.BCrypt.HashPassword(user.password);
-        _context.Users.Add(user);
-        _context.SaveChanges();
-        return Ok("Usuario registrado correctamente");
+        var result = await _auth.RegisterAsync(dto, ct);
+        if (result is null)
+            return Conflict(new { message = "El email ya está registrado." });
+
+        return Ok(result);
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
+    public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        var user = _context.Users.FirstOrDefault(u => u.email == request.email);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.password, user.password))
-        {
-            return Unauthorized("Credenciales incorrectas");
-        }
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_jwtKey);
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.id.ToString()),
-                new Claim(ClaimTypes.Name, user.name + " " + user.lastname),
-                new Claim(ClaimTypes.Email, user.email)
-            }),
-            Expires = DateTime.UtcNow.AddHours(2),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return Ok(new { token = tokenHandler.WriteToken(token) });
+        var result = await _auth.LoginAsync(request, ct);
+        if (result is null)
+            return Unauthorized(new { message = "Credenciales incorrectas" });
+
+        return Ok(result);
     }
 }
