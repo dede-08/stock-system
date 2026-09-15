@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ProductService, ProductQuery } from '../../../services/product.service';
-import { StatsService, ProductStats } from '../../../services/stats.service';
-import { Product } from '../../models/product.model';
+import { ProductService, ProductQuery } from '../../../core/services/product.service';
+import { StatsService, ProductStats } from '../../../core/services/stats.service';
+import { Product } from '../../../core/models/product.model';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import { extractError } from '../../shared/http-error';
+import { extractError } from '../../../shared/http-error';
 
 interface ProductForm {
   id?: number;

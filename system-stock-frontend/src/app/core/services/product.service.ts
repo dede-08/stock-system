@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { Product } from '../app/models/product.model';
-import { environment } from '../environments/environment';
+import { Product } from '../models/product.model';
+import { environment } from '../../../environments/environment';
 
 export interface PagedResult<T> {
   items: T[];

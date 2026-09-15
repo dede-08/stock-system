@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { environment } from '../environments/environment';
-import { LoginResponse, RegisterRequest } from '../app/models/auth.model';
+import { environment } from '../../../environments/environment';
+import { LoginResponse, RegisterRequest } from '../models/auth.model';
 
 @Injectable({
   providedIn: 'root'

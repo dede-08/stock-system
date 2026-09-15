@@ -1,13 +1,13 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RegisterRequest } from '../../models/auth.model';
+import { RegisterRequest } from '../../../core/models/auth.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
-import { extractError } from '../../shared/http-error';
+import { extractError } from '../../../shared/http-error';
 
 @Component({
   selector: 'app-register',

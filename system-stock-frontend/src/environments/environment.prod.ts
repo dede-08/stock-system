@@ -1,4 +1,6 @@
 export const environment = {
     production: true,
-    apiUrl: 'http://localhost:5000/api' // This should be changed to the production API URL
+    // Misma-origen: desplegar el frontend tras un reverse-proxy que sirva
+    // la API en /api (ej. Nginx). Para URL absoluta, fijarla aquí en build.
+    apiUrl: '/api'
 };
