@@ -16,7 +16,6 @@ public class RequestLoggingMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var stopwatch = Stopwatch.StartNew();
-        var requestTime = DateTime.UtcNow;
 
         try
         {
@@ -26,13 +25,15 @@ public class RequestLoggingMiddleware
         {
             stopwatch.Stop();
             var elapsedMs = stopwatch.ElapsedMilliseconds;
+            context.Items.TryGetValue(CorrelationIdMiddleware.HeaderName, out var rid);
 
             _logger.LogInformation(
-                "Request {method} {url} => {statusCode} ({elapsedMs}ms)",
+                "Request {method} {url} => {statusCode} ({elapsedMs}ms) rid={requestId}",
                 context.Request.Method,
                 context.Request.Path,
                 context.Response.StatusCode,
-                elapsedMs);
+                elapsedMs,
+                rid ?? context.TraceIdentifier);
         }
     }
 }

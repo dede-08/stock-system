@@ -30,7 +30,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         throw new InvalidOperationException("Connection string 'DefaultConnection' no configurada. " +
             "Define ConnectionStrings__DefaultConnection (ver .env.example).");
     }
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(connectionString, npgsql =>
+    {
+        npgsql.EnableRetryOnFailure(maxRetryCount: 3);
+        npgsql.CommandTimeout(15);
+    });
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -139,6 +143,8 @@ var app = builder.Build();
 
 // Middleware de errores PRIMERO para atrapar todo.
 app.UseExceptionHandling();
+app.UseCorrelationId();
+app.UseSecurityHeaders();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

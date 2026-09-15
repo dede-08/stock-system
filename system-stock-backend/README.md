@@ -26,8 +26,38 @@ Una API REST completa para la gestión de inventario con autenticación JWT, des
 ## Requisitos Previos
 
 - .NET 8.0 SDK
-- PostgreSQL
+- PostgreSQL (o Docker)
 - Visual Studio 2022 o VS Code
+
+## Puesta en marcha
+
+```bash
+cp .env.example .env   # completa JWT_KEY y PGPASSWORD
+dotnet ef database update
+dotnet run
+```
+
+Con Docker (desde la raíz del repo):
+
+```bash
+docker compose up --build
+```
+
+## Endpoints clave
+
+- `GET /health` — health check (sin auth)
+- `POST /api/auth/add-user` — registro (rate-limit 10/min)
+- `POST /api/auth/login` — login, devuelve `{token,email,fullName}`
+- `GET /api/products?page=1&pageSize=20&sortBy=price&desc=true` — paginado
+- `GET /api/stats/products` — stats (cache 60s)
+
+## Tests y CI
+
+```bash
+dotnet test api-gestion-productos.sln
+```
+
+CI en `.github/workflows/backend-ci.yml` (build + test).
 
 
 ## Arquitectura

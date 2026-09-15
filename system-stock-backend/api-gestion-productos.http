@@ -1,6 +1,38 @@
-@api_gestion_productos_HostAddress = http://localhost:5173
+@HostAddress = http://localhost:5173
+@token = TU_JWT_AQUI
 
-GET {{api_gestion_productos_HostAddress}}/weatherforecast/
+### Health (sin auth)
+GET {{HostAddress}}/health
 Accept: application/json
 
-###
+### Registro
+POST {{HostAddress}}/api/auth/add-user
+Content-Type: application/json
+
+{
+  "name": "Ada",
+  "lastname": "Lovelace",
+  "age": 30,
+  "email": "ada@x.com",
+  "telephone": "999999999",
+  "password": "Password123!"
+}
+
+### Login
+POST {{HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ada@x.com",
+  "password": "Password123!"
+}
+
+### Listado paginado
+GET {{HostAddress}}/api/products?page=1&pageSize=20&sortBy=price&desc=true
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Stats
+GET {{HostAddress}}/api/stats/products
+Authorization: Bearer {{token}}
+Accept: application/json
