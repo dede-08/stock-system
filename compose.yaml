@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PGDATABASE:-products_database}
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:?Define PGPASSWORD en .env}
+    ports:
+      - "${PGPORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./system-stock-backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${PGDATABASE:-products_database};Username=${PGUSER:-postgres};Password=${PGPASSWORD:?Define PGPASSWORD en .env}
+      JWT_KEY: ${JWT_KEY:?Define JWT_KEY en .env}
+      JWT_ISSUER: ${JWT_ISSUER:-api-gestion-productos}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-shopstore-app}
+      JWT_EXPIRY_MINUTES: ${JWT_EXPIRY_MINUTES:-120}
+      Jwt__RefreshExpiryDays: ${JWT_REFRESH_DAYS:-7}
+      Admin__Email: ${ADMIN_EMAIL:-}
+      Cors__AllowedOrigins__0: ${FRONTEND_URL:-http://localhost:4200}
+    ports:
+      - "${API_PORT:-8080}:8080"
+
+volumes:
+  pgdata:

@@ -1,0 +1,29 @@
+name: frontend-ci
+
+on:
+  push:
+    paths:
+      - 'system-stock-frontend/**'
+  pull_request:
+    paths:
+      - 'system-stock-frontend/**'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: system-stock-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: system-stock-frontend/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit -p tsconfig.app.json
+      - run: npx tsc --noEmit -p tsconfig.spec.json
+      - run: npm run lint
+      - run: npm run test:ci
+      - run: npm run build -- --configuration production
