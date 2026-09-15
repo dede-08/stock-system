@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ProductService, ProductQuery } from '../../../core/services/product.service';
 import { StatsService, ProductStats } from '../../../core/services/stats.service';
 import { Product } from '../../../core/models/product.model';
@@ -226,6 +226,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onEsc(): void {
     if (this.pendingDelete && !this.deleting) this.pendingDelete = null;
     else if (this.showModal) this.closeModal();
+  }
+
+  @HostListener('window:keydown.escape')
+  onEscKey(): void {
+    this.onEsc();
   }
 
   private formError(): string {

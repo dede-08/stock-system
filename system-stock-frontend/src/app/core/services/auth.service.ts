@@ -32,7 +32,7 @@ export class AuthService {
     );
   }
 
-  register(user: RegisterRequest): Observable<any> {
+  register(user: RegisterRequest): Observable<object> {
     return this.http.post(`${this.apiUrl}/add-user`, user);
   }
 

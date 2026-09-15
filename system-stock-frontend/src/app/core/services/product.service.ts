@@ -44,7 +44,7 @@ export class ProductService {
   }
 
   searchProducts(q: string, query: ProductQuery = {}): Observable<PagedResult<Product>> {
-    let params = new HttpParams()
+    const params = new HttpParams()
       .set('q', q)
       .set('page', query.page ?? 1)
       .set('pageSize', query.pageSize ?? 20);
@@ -52,7 +52,7 @@ export class ProductService {
   }
 
   getProductsByCategory(category: string, query: ProductQuery = {}): Observable<PagedResult<Product>> {
-    let params = new HttpParams()
+    const params = new HttpParams()
       .set('page', query.page ?? 1)
       .set('pageSize', query.pageSize ?? 20);
     return this.http.get<PagedResult<Product>>(

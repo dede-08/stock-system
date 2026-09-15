@@ -12,7 +12,12 @@ export class AuthInterceptor implements HttpInterceptor {
 
   constructor(private authService: AuthService, private router: Router) { }
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- firma exigida por HttpInterceptor
+    req: HttpRequest<any>,
+    next: HttpHandler
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- firma exigida por HttpInterceptor
+  ): Observable<HttpEvent<any>> {
     const token = this.authService.getToken();
     const authReq = token && !this.isAuthUrl(req.url)
       ? req.clone({ headers: req.headers.set('Authorization', `Bearer ${token}`) })
@@ -28,6 +33,7 @@ export class AuthInterceptor implements HttpInterceptor {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- firma exigida por HttpHandler
   private handle401(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (!this.authService.getRefreshToken()) {
       this.forceLogout();

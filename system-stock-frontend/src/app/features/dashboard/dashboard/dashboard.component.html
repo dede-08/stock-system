@@ -1,5 +1,5 @@
 <!-- Header -->
-<div (window:keydown.escape)="onEsc()">
+<div>
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
       <span class="navbar-brand mb-0">
@@ -19,7 +19,7 @@
     <div class="toast show" role="alert">
       <div class="toast-header" [class.text-success]="notification.type === 'success'" [class.text-danger]="notification.type === 'danger'">
         <strong class="me-auto">{{ notification.type === 'success' ? 'Éxito' : 'Error' }}</strong>
-        <button type="button" class="btn-close" (click)="notification = null"></button>
+        <button type="button" class="btn-close" (click)="notification = null" aria-label="Cerrar notificación"><span class="visually-hidden">Cerrar notificación</span></button>
       </div>
       <div class="toast-body">{{ notification.msg }}</div>
     </div>
@@ -220,7 +220,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">{{ isEditMode ? 'Editar Producto' : 'Agregar Producto' }}</h5>
-          <button type="button" class="btn-close" (click)="closeModal()" [disabled]="saving"></button>
+          <button type="button" class="btn-close" (click)="closeModal()" [disabled]="saving" aria-label="Cerrar"><span class="visually-hidden">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <form #productForm="ngForm" (ngSubmit)="saveProduct()">
@@ -317,6 +317,8 @@
   </div>
 
   <!-- Modal Backdrop -->
+  <!-- Backdrop: atajo solo-mouse; teclado cubierto con ESC -->
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
   <div class="modal-backdrop fade" [class.show]="showModal" *ngIf="showModal" (click)="closeModal()"></div>
 
   <!-- Delete confirm Modal -->
@@ -325,7 +327,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Eliminar producto</h5>
-          <button type="button" class="btn-close" (click)="pendingDelete = null" [disabled]="deleting"></button>
+          <button type="button" class="btn-close" (click)="pendingDelete = null" [disabled]="deleting" aria-label="Cerrar"><span class="visually-hidden">Cerrar</span></button>
         </div>
         <div class="modal-body">
           ¿Eliminar <strong>{{ pendingDelete?.name }}</strong>? Esta acción lo desactiva del inventario.
@@ -340,5 +342,6 @@
       </div>
     </div>
   </div>
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
   <div class="modal-backdrop fade" [class.show]="pendingDelete" *ngIf="pendingDelete" (click)="!deleting && (pendingDelete = null)"></div>
 </div>
