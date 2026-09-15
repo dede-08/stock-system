@@ -12,6 +12,13 @@ export interface PagedResult<T> {
   totalPages: number;
 }
 
+export interface ProductQuery {
+  page?: number;
+  pageSize?: number;
+  sortBy?: 'name' | 'price' | 'stock' | 'createdAt';
+  desc?: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -27,9 +34,29 @@ export class ProductService {
     );
   }
 
-  getProductsPaged(page = 1, pageSize = 20): Observable<PagedResult<Product>> {
-    const params = new HttpParams().set('page', page).set('pageSize', pageSize);
+  getProductsPaged(query: ProductQuery = {}): Observable<PagedResult<Product>> {
+    let params = new HttpParams()
+      .set('page', query.page ?? 1)
+      .set('pageSize', query.pageSize ?? 20);
+    if (query.sortBy) params = params.set('sortBy', query.sortBy);
+    if (query.desc) params = params.set('desc', true);
     return this.http.get<PagedResult<Product>>(this.apiUrl, { params });
+  }
+
+  searchProducts(q: string, query: ProductQuery = {}): Observable<PagedResult<Product>> {
+    let params = new HttpParams()
+      .set('q', q)
+      .set('page', query.page ?? 1)
+      .set('pageSize', query.pageSize ?? 20);
+    return this.http.get<PagedResult<Product>>(`${this.apiUrl}/search`, { params });
+  }
+
+  getProductsByCategory(category: string, query: ProductQuery = {}): Observable<PagedResult<Product>> {
+    let params = new HttpParams()
+      .set('page', query.page ?? 1)
+      .set('pageSize', query.pageSize ?? 20);
+    return this.http.get<PagedResult<Product>>(
+      `${this.apiUrl}/category/${encodeURIComponent(category)}`, { params });
   }
 
   addProduct(product: Partial<Product>): Observable<Product> {

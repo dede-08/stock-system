@@ -13,7 +13,7 @@
             <form (ngSubmit)="onLogin()" #loginForm="ngForm">
               <div class="mb-3">
                 <label for="username" class="form-label">Email</label>
-                <input type="text" class="form-control" id="email" [(ngModel)]="email" name="email" required
+                <input type="email" class="form-control" id="email" [(ngModel)]="email" name="email" required
                   placeholder="Ingrese su email">
               </div>
 
@@ -27,10 +27,12 @@
                 {{ error }}
               </div>
 
-              <button type="submit" class="btn btn-primary w-100" [disabled]="!loginForm.form.valid">
-                Ingresar
+              <button type="submit" class="btn btn-primary w-100" [disabled]="!loginForm.form.valid || loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                {{ loading ? 'Ingresando…' : 'Ingresar' }}
               </button>
             </form>
+            <p class="text-center mt-3 mb-0">¿No tienes cuenta? <a routerLink="/register">Regístrate</a></p>
           </div>
         </div>
       </div>

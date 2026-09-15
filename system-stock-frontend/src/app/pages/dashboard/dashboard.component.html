@@ -1,280 +1,344 @@
 <!-- Header -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-          <img src="https://via.placeholder.com/40x40/ffffff/007bff?text=L" alt="Logo" class="me-2">
-          Gestión de Inventarios
-        </a>
-        
-        <div class="navbar-nav ms-auto">
-          <button class="btn btn-outline-light" (click)="logout()">
-            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-          </button>
-        </div>
+<div (window:keydown.escape)="onEsc()">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0">
+        <img src="assets/logo.png" alt="Logo" class="me-2" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+        Gestión de Inventarios
+      </span>
+      <div class="navbar-nav ms-auto">
+        <button class="btn btn-outline-light" (click)="logout()">
+          <i class="fas fa-right-from-bracket"></i> Cerrar Sesión
+        </button>
       </div>
-    </nav>
+    </div>
+  </nav>
 
-    <!-- Main Content -->
-    <div class="container-fluid py-4">
-      <!-- Stats Cards -->
-      <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-          <div class="card bg-primary text-white shadow">
-            <div class="card-body">
-              <div class="row no-gutters align-items-center">
-                <div class="col mr-2">
-                  <div class="text-xs font-weight-bold text-uppercase mb-1">Total Productos</div>
-                  <div class="h5 mb-0 font-weight-bold">{{ getTotalProducts() }}</div>
-                </div>
-                <div class="col-auto">
-                  <i class="fas fa-boxes fa-2x text-gray-300"></i>
-                </div>
+  <!-- Toast notificación -->
+  <div *ngIf="notification" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+    <div class="toast show" role="alert">
+      <div class="toast-header" [class.text-success]="notification.type === 'success'" [class.text-danger]="notification.type === 'danger'">
+        <strong class="me-auto">{{ notification.type === 'success' ? 'Éxito' : 'Error' }}</strong>
+        <button type="button" class="btn-close" (click)="notification = null"></button>
+      </div>
+      <div class="toast-body">{{ notification.msg }}</div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container-fluid py-4">
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-primary text-white shadow">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-uppercase mb-1">Total Productos</div>
+                <div class="h5 mb-0 font-weight-bold">{{ stats ? stats.totalProducts : '—' }}</div>
               </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6 mb-4">
-          <div class="card bg-success text-white shadow">
-            <div class="card-body">
-              <div class="row no-gutters align-items-center">
-                <div class="col mr-2">
-                  <div class="text-xs font-weight-bold text-uppercase mb-1">Stock Total</div>
-                  <div class="h5 mb-0 font-weight-bold">{{ getTotalStock() }}</div>
-                </div>
-                <div class="col-auto">
-                  <i class="fas fa-warehouse fa-2x text-gray-300"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6 mb-4">
-          <div class="card bg-info text-white shadow">
-            <div class="card-body">
-              <div class="row no-gutters align-items-center">
-                <div class="col mr-2">
-                  <div class="text-xs font-weight-bold text-uppercase mb-1">Valor Total</div>
-                  <div class="h5 mb-0 font-weight-bold">\${{ getTotalValue().toFixed(2) }}</div>
-                </div>
-                <div class="col-auto">
-                  <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6 mb-4">
-          <div class="card bg-warning text-white shadow">
-            <div class="card-body">
-              <div class="row no-gutters align-items-center">
-                <div class="col mr-2">
-                  <div class="text-xs font-weight-bold text-uppercase mb-1">Stock Bajo</div>
-                  <div class="h5 mb-0 font-weight-bold">{{ getLowStockCount() }}</div>
-                </div>
-                <div class="col-auto">
-                  <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
-                </div>
+              <div class="col-auto">
+                <i class="fas fa-boxes fa-2x text-gray-300"></i>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Products Section -->
-      <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-          <h6 class="m-0 font-weight-bold text-primary">
-            <img src="https://via.placeholder.com/30x30/007bff/ffffff?text=L" alt="Logo" class="me-2">
-            Lista de Productos
-          </h6>
-          <button class="btn btn-primary" (click)="openAddModal()">
-            <i class="fas fa-plus"></i> Agregar Producto
-          </button>
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-success text-white shadow">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-uppercase mb-1">Valor Total</div>
+                <div class="h5 mb-0 font-weight-bold">{{ stats ? (stats.totalValue | currency:'PEN':'symbol':'1.2-2') : '—' }}</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="card-body">
-          <!-- Search and Filter -->
-          <div class="row mb-3">
-            <div class="col-md-6">
+      </div>
+
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-warning text-dark shadow">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-uppercase mb-1">Stock Bajo (≤10)</div>
+                <div class="h5 mb-0 font-weight-bold">{{ stats ? stats.lowStockProducts : '—' }}</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-exclamation-triangle fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-danger text-white shadow">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-uppercase mb-1">Agotados</div>
+                <div class="h5 mb-0 font-weight-bold">{{ stats ? stats.outOfStockProducts : '—' }}</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-box-open fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Section -->
+    <div class="card shadow mb-4">
+      <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Lista de Productos</h6>
+        <button class="btn btn-primary" (click)="openAddModal()">
+          <i class="fas fa-plus"></i> Agregar Producto
+        </button>
+      </div>
+      <div class="card-body">
+        <!-- Search and Filter -->
+        <div class="row mb-3 g-2">
+          <div class="col-md-6">
+            <div class="input-group">
               <input
                 type="text"
                 class="form-control"
-                placeholder="Buscar productos..."
+                placeholder="Buscar por nombre, descripción o categoría…"
                 [(ngModel)]="searchTerm"
-                (input)="filterProducts()"
+                (input)="onSearchInput()"
               >
-            </div>
-            <div class="col-md-6">
-              <select class="form-select" [(ngModel)]="selectedCategory" (change)="filterProducts()">
-                <option value="">Todas las categorías</option>
-                <option value="Electrónicos">Electrónicos</option>
-                <option value="Accesorios">Accesorios</option>
-                <option value="Ropa">Ropa</option>
-                <option value="Hogar">Hogar</option>
-              </select>
+              <button *ngIf="searchTerm" class="btn btn-outline-secondary" (click)="clearSearch()" title="Limpiar búsqueda">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
           </div>
+          <div class="col-md-6">
+            <select class="form-select" [(ngModel)]="selectedCategory" (change)="onCategoryChange()" [disabled]="!!searchTerm.trim()">
+              <option value="">Todas las categorías</option>
+              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+        </div>
 
-          <!-- Products Table -->
-          <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-              <thead class="table-primary">
-                <tr>
-                  <th>ID</th>
-                  <th>Imagen</th>
-                  <th>Nombre</th>
-                  <th>Descripción</th>
-                  <th>Categoría</th>
-                  <th>Precio</th>
-                  <th>Stock</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let product of filteredProducts">
-                  <td>{{ product.id }}</td>
-                  <td>
-                    <img [src]="product.imageUrl" alt="{{ product.name }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
-                  </td>
-                  <td>{{ product.name }}</td>
-                  <td>{{ product.description }}</td>
-                  <td>
-                    <span class="badge bg-secondary">{{ product.category }}</span>
-                  </td>
-                  <td>\${{ product.price.toFixed(2) }}</td>
-                  <td>
-                    <span class="badge" [class]="getStockBadgeClass(product.stock)">
-                      {{ product.stock }}
-                    </span>
-                  </td>
-                  <td>
-                    <button class="btn btn-sm btn-outline-primary me-1" (click)="openEditModal(product)">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" (click)="deleteProduct(product.id)">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <div *ngIf="error" class="alert alert-danger d-flex justify-content-between align-items-center">
+          <span>{{ error }}</span>
+          <button class="btn btn-sm btn-outline-danger" (click)="refreshAll()">Reintentar</button>
+        </div>
+
+        <!-- Products Table -->
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary">
+              <tr>
+                <th>ID</th>
+                <th (click)="toggleSort('name')" style="cursor: pointer;" title="Ordenar por nombre">
+                  Nombre <i [class]="sortIcon('name')"></i>
+                </th>
+                <th>Descripción</th>
+                <th>Categoría</th>
+                <th (click)="toggleSort('price')" style="cursor: pointer;" title="Ordenar por precio">
+                  Precio <i [class]="sortIcon('price')"></i>
+                </th>
+                <th (click)="toggleSort('stock')" style="cursor: pointer;" title="Ordenar por stock">
+                  Stock <i [class]="sortIcon('stock')"></i>
+                </th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="loading">
+                <td colspan="7" class="text-center py-4">
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Cargando productos…
+                </td>
+              </tr>
+              <tr *ngIf="!loading && products.length === 0">
+                <td colspan="7" class="text-center py-4 text-muted">
+                  <i class="fas fa-box-open fa-2x d-block mb-2"></i>
+                  {{ searchTerm || selectedCategory ? 'Sin resultados para el filtro actual.' : 'Aún no hay productos. ¡Agrega el primero!' }}
+                </td>
+              </tr>
+              <tr *ngFor="let product of products; trackBy: trackById">
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td class="text-truncate" style="max-width: 250px;" [title]="product.description">{{ product.description || '—' }}</td>
+                <td>
+                  <span class="badge bg-secondary">{{ product.category }}</span>
+                </td>
+                <td>{{ product.price | currency:'PEN':'symbol':'1.2-2' }}</td>
+                <td>
+                  <span class="badge" [class]="getStockBadgeClass(product.stock)" [title]="stockLabel(product.stock)">
+                    {{ product.stock }}
+                  </span>
+                </td>
+                <td class="text-nowrap">
+                  <button class="btn btn-sm btn-outline-primary me-1" (click)="openEditModal(product)" title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="askDelete(product)" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2">
+          <div class="text-muted small">
+            {{ total === 0 ? '0 productos' : 'Mostrando ' + products.length + ' de ' + total + ' · Página ' + page + ' de ' + totalPages }}
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="pageSize" (change)="onPageSizeChange()" aria-label="Productos por página">
+              <option [ngValue]="10">10 / pág.</option>
+              <option [ngValue]="20">20 / pág.</option>
+              <option [ngValue]="50">50 / pág.</option>
+            </select>
+            <button class="btn btn-sm btn-outline-primary" (click)="goToPage(page - 1)" [disabled]="page <= 1">
+              <i class="fas fa-chevron-left"></i> Anterior
+            </button>
+            <button class="btn btn-sm btn-outline-primary" (click)="goToPage(page + 1)" [disabled]="page >= totalPages">
+              Siguiente <i class="fas fa-chevron-right"></i>
+            </button>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Add/Edit Product Modal -->
-    <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              <img src="https://via.placeholder.com/30x30/007bff/ffffff?text=L" alt="Logo" class="me-2">
-              {{ isEditMode ? 'Editar Producto' : 'Agregar Producto' }}
-            </h5>
-            <button type="button" class="btn-close" (click)="closeModal()"></button>
-          </div>
-          <div class="modal-body">
-            <form #productForm="ngForm">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="name" class="form-label">Nombre *</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="name"
-                    [(ngModel)]="currentProduct.name"
-                    name="name"
-                    required
-                  >
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="category" class="form-label">Categoría *</label>
-                  <select
-                    class="form-select"
-                    id="category"
-                    [(ngModel)]="currentProduct.category"
-                    name="category"
-                    required
-                  >
-                    <option value="">Seleccionar categoría</option>
-                    <option value="Electrónicos">Electrónicos</option>
-                    <option value="Accesorios">Accesorios</option>
-                    <option value="Ropa">Ropa</option>
-                    <option value="Hogar">Hogar</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div class="mb-3">
-                <label for="description" class="form-label">Descripción</label>
-                <textarea
-                  class="form-control"
-                  id="description"
-                  [(ngModel)]="currentProduct.description"
-                  name="description"
-                  rows="3"
-                ></textarea>
-              </div>
-              
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="price" class="form-label">Precio *</label>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="price"
-                    [(ngModel)]="currentProduct.price"
-                    name="price"
-                    step="0.01"
-                    min="0"
-                    required
-                  >
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="stock" class="form-label">Stock *</label>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="stock"
-                    [(ngModel)]="currentProduct.stock"
-                    name="stock"
-                    min="0"
-                    required
-                  >
-                </div>
-              </div>
-              
-              <div class="mb-3">
-                <label for="imageUrl" class="form-label">URL de Imagen</label>
+  <!-- Add/Edit Product Modal -->
+  <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ isEditMode ? 'Editar Producto' : 'Agregar Producto' }}</h5>
+          <button type="button" class="btn-close" (click)="closeModal()" [disabled]="saving"></button>
+        </div>
+        <div class="modal-body">
+          <form #productForm="ngForm" (ngSubmit)="saveProduct()">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="name" class="form-label">Nombre *</label>
                 <input
-                  type="url"
+                  type="text"
                   class="form-control"
-                  id="imageUrl"
-                  [(ngModel)]="currentProduct.imageUrl"
-                  name="imageUrl"
+                  id="name"
+                  [(ngModel)]="currentProduct.name"
+                  name="name"
+                  required
+                  maxlength="100"
                 >
               </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="closeModal()">
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="saveProduct()"
-              [disabled]="!productForm.form.valid"
-            >
-              {{ isEditMode ? 'Actualizar' : 'Guardar' }}
-            </button>
-          </div>
+              <div class="col-md-6 mb-3">
+                <label for="category" class="form-label">Categoría *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="category"
+                  list="categoryList"
+                  [(ngModel)]="currentProduct.category"
+                  name="category"
+                  required
+                  maxlength="50"
+                  placeholder="Ej. Electrónicos"
+                >
+                <datalist id="categoryList">
+                  <option *ngFor="let c of categories" [value]="c"></option>
+                </datalist>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Descripción</label>
+              <textarea
+                class="form-control"
+                id="description"
+                [(ngModel)]="currentProduct.description"
+                name="description"
+                rows="3"
+                maxlength="500"
+              ></textarea>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="price" class="form-label">Precio (S/) *</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="price"
+                  [(ngModel)]="currentProduct.price"
+                  name="price"
+                  step="0.01"
+                  min="0.01"
+                  required
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="stock" class="form-label">Stock *</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="stock"
+                  [(ngModel)]="currentProduct.stock"
+                  name="stock"
+                  step="1"
+                  min="0"
+                  required
+                >
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="saving">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="saveProduct()"
+            [disabled]="!productForm.form.valid || saving"
+          >
+            <span *ngIf="saving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ isEditMode ? 'Actualizar' : 'Guardar' }}
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Modal Backdrop -->
-    <div class="modal-backdrop fade" [class.show]="showModal" *ngIf="showModal"></div>
+  <!-- Modal Backdrop -->
+  <div class="modal-backdrop fade" [class.show]="showModal" *ngIf="showModal" (click)="closeModal()"></div>
+
+  <!-- Delete confirm Modal -->
+  <div class="modal fade" [class.show]="pendingDelete" [style.display]="pendingDelete ? 'block' : 'none'" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Eliminar producto</h5>
+          <button type="button" class="btn-close" (click)="pendingDelete = null" [disabled]="deleting"></button>
+        </div>
+        <div class="modal-body">
+          ¿Eliminar <strong>{{ pendingDelete?.name }}</strong>? Esta acción lo desactiva del inventario.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="pendingDelete = null" [disabled]="deleting">Cancelar</button>
+          <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleting">
+            <span *ngIf="deleting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade" [class.show]="pendingDelete" *ngIf="pendingDelete" (click)="!deleting && (pendingDelete = null)"></div>
+</div>

@@ -5,7 +5,7 @@ export interface Product {
   price: number;
   stock: number;
   category: string;
-  imageUrl?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string | null;
+  isActive: boolean;
 }
