@@ -81,7 +81,20 @@ public class AuthService : IAuthService
             .Include(r => r.user)
             .FirstOrDefaultAsync(r => r.tokenHash == hash, ct);
 
-        if (stored is null || !stored.IsActive || stored.user is null || !stored.user.isActive)
+        if (stored is null || stored.user is null || !stored.user.isActive)
+            return null;
+
+        if (stored.IsRevoked)
+        {
+            // Reuso de un refresh ya rotado = posible robo: invalida todas
+            // las sesiones del usuario y obliga a login de nuevo.
+            await _context.RefreshTokens
+                .Where(r => r.userId == stored.userId && r.revokedAt == null)
+                .ExecuteUpdateAsync(s => s.SetProperty(r => r.revokedAt, DateTime.UtcNow), ct);
+            return null;
+        }
+
+        if (stored.IsExpired)
             return null;
 
         // Rotación: revoca el usado y emite un par nuevo.

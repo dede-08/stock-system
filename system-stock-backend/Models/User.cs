@@ -29,7 +29,7 @@ public class User
     public string telephone { get; set; } = "";
     
     [Required(ErrorMessage = "La contraseña es obligatoria")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener entre 6 y 100 caracteres")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "La contraseña debe tener entre 8 y 100 caracteres")]
     public string password { get; set; } = "";
     
     public DateTime createdat { get; set; } = DateTime.UtcNow;
